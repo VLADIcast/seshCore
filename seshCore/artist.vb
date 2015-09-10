@@ -10,6 +10,7 @@
 
     Public Property artistID As Integer
 
+
     Public Property media As System.Collections.ObjectModel.Collection(Of mediaItem)
 
 
