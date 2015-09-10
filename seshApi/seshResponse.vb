@@ -10,6 +10,7 @@
         INVALID_PARAMETERS = 6
         ARTIST_DATA_MISSING = 7
         ACCESS_TO_BANDMEMBER_DENIED = 8
+        ACCESS_TO_SONG_DENIED = 8
     End Enum
 
     Public Property missingParameters As System.Collections.ObjectModel.Collection(Of String)

@@ -11,6 +11,9 @@
         requiredParameterMap("user.bandleader.bandmember.approve") = "bandGUID,bandMemberGUID"
         requiredParameterMap("user.bandleader.bandmember.drop") = "bandGUID,bandMemberGUID"
         requiredParameterMap("user.bandleader.bandmembers.list") = "bandGUID"
+        requiredParameterMap("user.bandleader.song.add") = "bandGUID,title,artist"
+        requiredParameterMap("user.bandleader.song.update") = "bandGUID,songGUID,title,artist"
+        requiredParameterMap("user.bandleader.song.remove") = "bandGUID,songGUID"
 
 
     End Sub
@@ -39,6 +42,29 @@
         band.getMembers(statuses)
     End Sub
 
+    Public Sub userBandleaderSongAdd()
+        Dim song As seshCore.song
+        song = New seshCore.song(param("title"), param("artist"), param("description"))
+        song.Add()
+        band.getSongs()
+    End Sub
+
+    Public Sub userBandleaderSongUpdate()
+        Dim song As seshCore.song
+        song = New seshCore.song(param("songGUID"))
+        song.title = param("title")
+        song.artist = param("artist")
+        song.description = param("description")
+        song.Update()
+        band.getSongs()
+    End Sub
+
+    Public Sub userBandleaderSongRemove()
+        Dim song As seshCore.song
+        song = New seshCore.song(param("songGUID"))
+        song.Remove()
+        band.getSongs()
+    End Sub
 
     Public Sub New(methodName As String, userGUID As String, param As Dictionary(Of String, String))
         MyBase.New(methodName, param)
@@ -58,6 +84,7 @@
 
         If errorCode = seshResponse.errorType.NO_ERROR Then
 
+            ' check bandmember access
             If methodName.StartsWith("user.bandleader.bandmember.") Then
                 Dim hasAccessToBandMember As Boolean = False
                 For Each bm As seshCore.bandMember In band.members
@@ -69,6 +96,19 @@
                     errorCode = seshResponse.errorType.ACCESS_TO_BANDMEMBER_DENIED
                 End If
 
+            End If
+
+            ' check song access
+            If methodName.StartsWith("user.bandleader.song.") Then
+                Dim hasAccessToSong As Boolean = False
+                For Each sng As seshCore.song In band.songs
+                    If sng.GUID = param("songGUID") Then
+                        hasAccessToSong = True
+                    End If
+                Next
+                If hasAccessToSong = False Then
+                    errorCode = seshResponse.errorType.ACCESS_TO_SONG_DENIED
+                End If
             End If
 
 
@@ -88,6 +128,19 @@
                 If methodName = "user.bandleader.bandmembers.list" Then
                     userBandleaderBandmembersList()
                 End If
+
+                If methodName = "user.bandleader.song.add" Then
+                    userBandleaderSongAdd()
+                End If
+
+                If methodName = "user.bandleader.song.update" Then
+                    userBandleaderSongUpdate()
+                End If
+
+                If methodName = "user.bandleader.song.remove" Then
+                    userBandleaderSongRemove()
+                End If
+
 
             End If
 
