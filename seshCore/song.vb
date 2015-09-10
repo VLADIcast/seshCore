@@ -25,6 +25,10 @@
 
     End Sub
 
+    Public Sub AddMediaItem(mediaItem As mediaItem)
+
+    End Sub
+
     Public Sub Update()
 
     End Sub

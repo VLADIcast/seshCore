@@ -14,8 +14,28 @@ Public Class mediaItem
 
     Public Property description As String
 
+
+
+    Public Sub Update()
+
+    End Sub
+
+    Public Sub Remove()
+
+    End Sub
+
     Public Sub New()
 
+    End Sub
+
+    Public Sub New(mediaType As Integer, URL As String, description As String)
+        _mediaType = mediaType
+        _URL = URL
+        _description = description
+    End Sub
+
+    Public Sub New(GUID As String)
+        MyBase.GUID = GUID
     End Sub
 
 End Class

@@ -354,6 +354,13 @@ Public Class band
 
     End Sub
 
+    Public Sub AddSong()
+
+    End Sub
+
+    Public Sub AddSlot()
+
+    End Sub
 
 
     Public Sub Create()
@@ -375,11 +382,11 @@ Public Class band
     End Sub
 
     ' message some or all of the band members
-    Public Sub messageBandMembers(fromUser As user, subject As String, membersToMessage As System.Collections.ObjectModel.Collection(Of bandMember))
+    Public Sub messageBandMembers(fromUser As user, subject As String, body As String)
         Dim notification As notification
         Dim toUsers As System.Collections.ObjectModel.Collection(Of user)
         toUsers = New System.Collections.ObjectModel.Collection(Of user)
-        For Each bandMember As bandMember In membersToMessage
+        For Each bandMember As bandMember In members
             toUsers.Add(bandMember.user)
         Next
 
@@ -387,12 +394,14 @@ Public Class band
     End Sub
 
     ' message the band leader
-    Public Sub messageBandLeader(fromUser As user, subject As String)
-        Dim toUsers As System.Collections.ObjectModel.Collection(Of bandMember)
-        toUsers = New System.Collections.ObjectModel.Collection(Of bandMember)
+    Public Sub messageBandLeader(fromUser As user, subject As String, body As String)
+        Dim notification As notification
+        Dim toUsers As System.Collections.ObjectModel.Collection(Of user)
+        toUsers = New System.Collections.ObjectModel.Collection(Of user)
 
-        toUsers.Add(leader)
-        messageBandMembers(fromUser, subject, toUsers)
+        toUsers.Add(leader.user)
+        notification = New notification(seshCore.notification.notificationType.CONTACT_MESSAGE, fromUser, toUsers, Nothing, Nothing, subject)
+        'messageBandMembers(fromUser, subject, toUsers, body)
     End Sub
 
     Public Sub New(leader As bandMember)

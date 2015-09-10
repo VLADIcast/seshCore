@@ -23,7 +23,7 @@
 
 
 
-    Public Sub New(emailNotificationType As notificationType, fromUser As user, toUsers As System.Collections.ObjectModel.Collection(Of user), Optional ByVal band As band = Nothing, Optional ByVal seshEvent As seshEvent = Nothing, Optional ByVal customSubject As String = "")
+    Public Sub New(emailNotificationType As notificationType, fromUser As user, toUsers As System.Collections.ObjectModel.Collection(Of user), Optional ByVal band As band = Nothing, Optional ByVal seshEvent As seshEvent = Nothing, Optional ByVal customSubject As String = "", Optional ByVal customBody As String = "")
         MyBase.New()
         MyBase.fromName = fromUser.credentials.name
         MyBase.fromEmail = fromUser.credentials.email
