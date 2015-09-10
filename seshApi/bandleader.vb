@@ -14,6 +14,10 @@
         requiredParameterMap("user.bandleader.song.add") = "bandGUID,title,artist"
         requiredParameterMap("user.bandleader.song.update") = "bandGUID,songGUID,title,artist"
         requiredParameterMap("user.bandleader.song.remove") = "bandGUID,songGUID"
+        requiredParameterMap("user.bandleader.media.add") = "bandGUID,mediatype,url"
+        requiredParameterMap("user.bandleader.media.update") = "bandGUID,mediaItemGUID,mediatype,url"
+        requiredParameterMap("user.bandleader.media.remove") = "bandGUID,mediaItemGUID"
+        requiredParameterMap("user.bandleader.bandmembers.message") = "bandGUID,subject,message"
 
 
     End Sub
@@ -39,14 +43,15 @@
         statuses = New System.Collections.ObjectModel.Collection(Of seshCore.bandMember.joinStatusType)
         statuses.Add(seshCore.bandMember.joinStatusType.APPLIED_NOTJOINED)
         statuses.Add(seshCore.bandMember.joinStatusType.MEMBER_JOINED_ACCEPTED)
+        statuses.Add(seshCore.bandMember.joinStatusType.MEMBER_DROPPEDOUT)
         band.getMembers(statuses)
     End Sub
 
     Public Sub userBandleaderSongAdd()
         Dim song As seshCore.song
         song = New seshCore.song(param("title"), param("artist"), param("description"))
-        song.Add()
-        band.getSongs()
+        band.AddSong()
+        'band.getSongs()
     End Sub
 
     Public Sub userBandleaderSongUpdate()
@@ -56,14 +61,52 @@
         song.artist = param("artist")
         song.description = param("description")
         song.Update()
-        band.getSongs()
+        'band.getSongs()
     End Sub
 
     Public Sub userBandleaderSongRemove()
         Dim song As seshCore.song
         song = New seshCore.song(param("songGUID"))
         song.Remove()
-        band.getSongs()
+        'band.getSongs()
+    End Sub
+
+    Public Sub userBandleaderMediaAdd()
+        Dim mediaItem As seshCore.mediaItem
+        mediaItem = New seshCore.mediaItem(param("mediatype"), param("url"), param("description"))
+        Dim song As seshCore.song
+        song = New seshCore.song(param("songGUID"))
+        song.AddMediaItem(mediaItem)
+
+    End Sub
+
+    Public Sub userBandleaderMediaUpdate()
+        Dim mediaItem As seshCore.mediaItem
+        mediaItem = New seshCore.mediaItem(param("mediaItemGUID"))
+        mediaItem.mediaType = param("mediaType")
+        mediaItem.URL = param("url")
+        mediaItem.description = param("description")
+        mediaItem.Update()
+
+
+    End Sub
+
+    Public Sub userBandleaderBandmembersMessage()
+        Dim statuses As System.Collections.ObjectModel.Collection(Of seshCore.bandMember.joinStatusType)
+        statuses = New System.Collections.ObjectModel.Collection(Of seshCore.bandMember.joinStatusType)
+
+        statuses.Add(seshCore.bandMember.joinStatusType.MEMBER_JOINED_ACCEPTED)
+        band.getMembers(statuses)
+
+        band.messageBandMembers(band.leader.user, param("subject"), param("messageBody"))
+    End Sub
+
+    Public Sub userBandleaderMediaRemove()
+        Dim mediaItem As seshCore.mediaItem
+        mediaItem = New seshCore.mediaItem(param("mediaItemGUID"))
+        mediaItem.Update()
+
+
     End Sub
 
     Public Sub New(methodName As String, userGUID As String, param As Dictionary(Of String, String))
@@ -99,7 +142,7 @@
             End If
 
             ' check song access
-            If methodName.StartsWith("user.bandleader.song.") Then
+            If methodName.StartsWith("user.bandleader.song.") And param("songGUID") <> "" Then
                 Dim hasAccessToSong As Boolean = False
                 For Each sng As seshCore.song In band.songs
                     If sng.GUID = param("songGUID") Then
@@ -111,6 +154,23 @@
                 End If
             End If
 
+            ' check media item access
+            If methodName.StartsWith("user.bandleader.media.") And param("mediaItemGUID") Then
+                Dim hasAccessToMedia As Boolean = False
+                For Each sng As seshCore.song In band.songs
+                    If Not sng.media Is Nothing Then
+                        For Each mi As seshCore.mediaItem In sng.media
+                            If mi.GUID = param("mediaItemGUID") Then
+                                hasAccessToMedia = True
+                            End If
+                        Next
+                    End If
+
+                Next
+                If hasAccessToMedia = False Then
+                    errorCode = seshResponse.errorType.ACCESS_TO_MEDIA_DENIED
+                End If
+            End If
 
 
             If errorCode = seshResponse.errorType.NO_ERROR Then
@@ -141,6 +201,21 @@
                     userBandleaderSongRemove()
                 End If
 
+                If methodName = "user.bandleader.media.add" Then
+                    userBandleaderMediaAdd()
+                End If
+
+                If methodName = "user.bandleader.media.update" Then
+                    userBandleaderMediaUpdate()
+                End If
+
+                If methodName = "user.bandleader.media.remove" Then
+                    userBandleaderMediaRemove()
+                End If
+
+                If methodName = "user.bandleader.bandmembers.message" Then
+                    userBandleaderBandmembersMessage()
+                End If
 
             End If
 
