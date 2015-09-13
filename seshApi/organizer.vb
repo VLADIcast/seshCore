@@ -10,11 +10,12 @@
     Public Sub initRequiredParams()
         ' build up the required params
         requiredParameterMap = New Dictionary(Of String, String)
-        requiredParameterMap("user.organizer.band.approve") = "bandGUID"
-        requiredParameterMap("user.organizer.band.drop") = "bandGUID"
-        requiredParameterMap("user.organizer.seshevent.update") = "eventDateTime,address,address2,city,country,state,zipcode,name"
-        requiredParameterMap("user.organizer.photo.remove") = "venuePhotoGUID"
-        requiredParameterMap("user.organizer.photo.add") = "pathToImage,height,width"
+        requiredParameterMap("user.organizer.band.approve") = "seshGUID,bandGUID"
+        requiredParameterMap("user.organizer.band.drop") = "seshGUID,bandGUID"
+        requiredParameterMap("user.organizer.seshevent.update") = "seshGUID,eventDateTime,address,address2,city,country,state,zipcode,name"
+        requiredParameterMap("user.organizer.photo.remove") = "seshGUID,venuePhotoGUID"
+        requiredParameterMap("user.organizer.photo.add") = "seshGUID,pathToImage,height,width"
+        requiredParameterMap("user.organizer.bands.list") = "seshGUID"
 
     End Sub
 
@@ -63,7 +64,11 @@
     End Sub
 
     Public Sub userOrganizerBandsList()
-
+        Dim statuses As System.Collections.ObjectModel.Collection(Of seshCore.band.playStatusType)
+        statuses = New System.Collections.ObjectModel.Collection(Of seshCore.band.playStatusType)
+        statuses.Add(seshCore.band.playStatusType.SUBMITTED)
+        statuses.Add(seshCore.band.playStatusType.PLAYING)
+        seshEvent.getBands(statuses)
     End Sub
     
 
@@ -103,6 +108,10 @@
 
             If methodName = "user.organizer.photo.add" Then
                 userOrganizerPhotoAdd()
+            End If
+
+            If methodName = "user.organizer.bands.list" Then
+                userOrganizerBandsList()
             End If
 
         End If
