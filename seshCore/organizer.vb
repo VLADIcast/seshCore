@@ -9,6 +9,8 @@
 End Class
 
 Public Class organizer
+    Inherits baseItem
+
     Public Property user As user
 
     Public Property seshEventsOrganizing As System.Collections.ObjectModel.Collection(Of seshEvent)
@@ -40,7 +42,7 @@ Public Class organizer
             End If
 
             ' KICKED
-            If playStatus = band.playStatusType.FORMED_KICKED Then
+            If playStatus = band.playStatusType.FORMED Then
                 toUsers = New System.Collections.ObjectModel.Collection(Of user)
                 For Each bandMember As bandMember In band.members
                     toUsers.Add(bandMember.user)
@@ -51,6 +53,10 @@ Public Class organizer
 
 
 
+
+    End Sub
+
+    Public Sub updateSeshEvent()
 
     End Sub
 

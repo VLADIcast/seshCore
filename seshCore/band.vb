@@ -31,9 +31,6 @@ Public Class bandMember
     Inherits artist
     Public Property band As band
 
-    Public Property bandMemberGUID As String
-
-    Public Property bandMemberID As Integer
 
     Public Enum joinStatusType As Integer
         APPLIED_NOTJOINED = 0
@@ -106,7 +103,7 @@ Public Class bandMember
 
 
 
-        ' run SQL to update status. Get if band is formed or accepted band became unformed
+        ' run SQL to update status.
 
 
         ' send email notification to band member regarding their status
@@ -122,15 +119,17 @@ Public Class bandMember
 
 
 
-        ' if band is formed, send an email to the organizers that a formed band is requesting to play the event
-        ' if accepted band is unformed, send an email to the organizers that an accepted band has dropped out because a member has been removed
-        If band.isBandFormed = True Or band.isAcceptedBandUnformed = True Then
-            If band.isBandFormed = True Then
-                emailNotificationType = seshCore.notification.notificationType.BAND_FORMED
+        ' if band has submitted or is playing, then there status gets changed back to FORMED and organizers are notified
+        If band.playStatus = seshCore.band.playStatusType.SUBMITTED Or band.playStatus = seshCore.band.playStatusType.PLAYING Then
+
+            If band.playStatus = seshCore.band.playStatusType.SUBMITTED Then
+                emailNotificationType = seshCore.notification.notificationType.SUBMITTED_BAND_UNFORMED
             End If
-            If band.isAcceptedBandUnformed = True Then
-                emailNotificationType = seshCore.notification.notificationType.BAND_UNFORMED
+
+            If band.playStatus = seshCore.band.playStatusType.PLAYING Then
+                emailNotificationType = seshCore.notification.notificationType.PLAYING_BAND_UNFORMED
             End If
+
 
             ' get the event organizers
             toUsers = New System.Collections.ObjectModel.Collection(Of user)
@@ -143,8 +142,43 @@ Public Class bandMember
             Dim bandActivity As bandActivity
             bandActivity = New bandActivity(band, emailNotificationType)
             bandActivity.Log()
-        End If
 
+        End If
+       
+
+    End Sub
+
+    Public Sub submitBandToEvent()
+        If band.playStatus = seshCore.band.playStatusType.FORMED Then
+            ' run sql to submit band to event
+            ' sql to submit bandGUID to band.seshEvent.GUID
+
+            ' notify band members that the band has been submitted
+            Dim notification As notification
+            Dim toUsers As System.Collections.ObjectModel.Collection(Of user)
+
+            ' get the band members
+            toUsers = New System.Collections.ObjectModel.Collection(Of user)
+            For Each bandMember As bandMember In band.members
+                toUsers.Add(bandMember.user)
+            Next
+            notification = New notification(seshCore.notification.notificationType.BAND_SUBMITTED_TO_EVENT, band.leader.user, toUsers, band, band.seshEvent)
+
+            ' log the activity
+            Dim bandActivity As bandActivity
+            bandActivity = New bandActivity(band, seshCore.notification.notificationType.BAND_SUBMITTED_TO_EVENT)
+            bandActivity.Log()
+
+            ' notify event organizers of the submission
+            ' get the event organizers
+            toUsers = New System.Collections.ObjectModel.Collection(Of user)
+            For Each organizer As organizer In band.seshEvent.organizers
+                toUsers.Add(organizer.user)
+            Next
+            notification = New notification(seshCore.notification.notificationType.ORGANIZER_HAS_NEW_BAND_SUBMITTED, band.leader.user, toUsers, band, band.seshEvent)
+
+
+        End If
     End Sub
 
     ' cancel the band's performance
@@ -252,6 +286,10 @@ Public Class bandMember
 
     End Sub
 
+    Public Sub loadBandMemberfromBandmemberGUID(bandmemberGUID As String)
+
+    End Sub
+
     Public Sub New()
 
     End Sub
@@ -260,10 +298,12 @@ Public Class bandMember
         _band = band
     End Sub
 
-    Public Sub New(bandMemberGUID As String)
-        _bandMemberGUID = bandMemberGUID
+    Public Sub New(userGUID As String)
+        MyBase.user.GUID = userGUID
+        '_bandMemberGUID = bandMemberGUID
     End Sub
 
+    
 
 
 
@@ -317,8 +357,9 @@ Public Class band
     Public Enum playStatusType As Integer
         NOTFORMED = 0
         FORMED = 1
-        PLAYING = 2
-        FORMED_KICKED = 3
+        SUBMITTED = 2
+        PLAYING = 3
+        FORMED_KICKED = 4
     End Enum
 
     Public Property playStatus As playStatusType
@@ -359,7 +400,7 @@ Public Class band
     End Sub
 
     Public Sub AddSlot()
-
+        ' Add slot, but unform and unsubmit band if either are true
     End Sub
 
 
@@ -378,6 +419,10 @@ Public Class band
     End Sub
 
     Public Sub Update()
+
+    End Sub
+
+    Public Sub updatePlayingStatus()
 
     End Sub
 

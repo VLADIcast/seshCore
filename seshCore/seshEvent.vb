@@ -1,4 +1,17 @@
-﻿Public Class seshEvent
+﻿Public Class venuePhoto
+    Inherits seshImage
+
+    Public Sub New()
+
+    End Sub
+
+    Public Sub New(GUID As String)
+        MyBase.GUID = GUID
+    End Sub
+
+End Class
+
+Public Class seshEvent
     Inherits baseItem
 
 
@@ -8,13 +21,15 @@
 
     Public Property creatorOrganizer As user
 
+    Public Property venueName As String
+
 
 
     Public Property description As String
 
     Public Property location As geo
 
-    Public Property venuePhotos As System.Collections.ObjectModel.Collection(Of seshImage)
+    Public Property venuePhotos As System.Collections.ObjectModel.Collection(Of venuePhoto)
 
     Public Property eventDateTime As String
 
@@ -29,7 +44,7 @@
 
     Public Property bands As System.Collections.ObjectModel.Collection(Of band)
 
-    
+
 
     Public Sub getBands()
 
@@ -66,6 +81,10 @@
         toUsers.Add(creatorOrganizer)
         Dim notification As notification
         notification = New notification(seshCore.notification.notificationType.ORGANIZER_REQUEST, requestingUser, toUsers, Nothing, Me, "")
+    End Sub
+
+    Public Sub New(GUID As String)
+        MyBase.GUID = GUID
     End Sub
     Public Sub New()
 
