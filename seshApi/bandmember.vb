@@ -2,7 +2,7 @@
     Inherits responseObj
 
 
-    Public Property bandMemberResponse As seshCore.bandMember
+    Public Property bandMember As seshCore.bandMember
 
     Public Sub initRequiredParams()
         ' build up the required params
@@ -13,19 +13,20 @@
     End Sub
 
     Public Sub userBandmemberDropout()
-        bandMemberResponse.dropOutOfBand()
+        bandMember.dropOutOfBand()
 
         ' repopulate after dropout
-        bandMemberResponse.PopulateBandMember()
+        bandMember.PopulateBandMember()
 
     End Sub
 
     Public Sub New(methodName As String, userGUID As String, param As Dictionary(Of String, String))
         MyBase.New(methodName, param)
 
-        _bandMemberResponse = New seshCore.bandMember(param("bandMemberGUID"))
+        _bandMember = New seshCore.bandMember
+        _bandMember.loadBandMemberfromBandmemberGUID(param("bandMemberGUID"))
 
-        If _bandMemberResponse.user.GUID <> userGUID Then
+        If _bandMember.user.GUID <> userGUID Then
             errorCode = seshResponse.errorType.ACCESS_DENIED
         End If
 
