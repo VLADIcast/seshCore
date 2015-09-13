@@ -18,6 +18,9 @@
         requiredParameterMap("user.bandleader.media.update") = "bandGUID,mediaItemGUID,mediatype,url"
         requiredParameterMap("user.bandleader.media.remove") = "bandGUID,mediaItemGUID"
         requiredParameterMap("user.bandleader.bandmembers.message") = "bandGUID,subject,message"
+        requiredParameterMap("user.bandleader.band.submit") = "bandGUID"
+        requiredParameterMap("user.bandleader.slot.add") = "instrument"
+        requiredParameterMap("user.bandleader.slot.remove") = "slotGUID"
 
 
     End Sub
@@ -84,11 +87,17 @@
     End Sub
 
     Public Sub userBandleaderSlotAdd()
+        Dim slot As seshCore.slot
+        slot = New seshCore.slot
+        slot.instrument = param("instrument")
+        band.AddSlot(slot)
 
     End Sub
 
     Public Sub userBandleaderSlotRemove()
-
+        Dim slot As seshCore.slot
+        slot = New seshCore.slot(param("slotGUID"))
+        slot.Remove()
     End Sub
 
 
@@ -193,6 +202,19 @@
                 End If
             End If
 
+            ' check slot access
+            If methodName.StartsWith("user.bandleader.slot.") And param("slotGUID") <> "" Then
+                Dim hasAccessToSlot As Boolean = False
+                For Each sng As seshCore.song In band.songs
+                    If sng.GUID = param("songGUID") Then
+                        hasAccessToSlot = True
+                    End If
+                Next
+                If hasAccessToSlot = False Then
+                    errorCode = seshResponse.errorType.ACCESS_TO_SLOT_DENIED
+                End If
+            End If
+
 
             If errorCode = seshResponse.errorType.NO_ERROR Then
 
@@ -240,6 +262,14 @@
 
                 If methodName = "user.bandleader.band.submit" Then
                     userBandleaderBandSubmit()
+                End If
+
+                If methodName = "user.bandleader.slot.add" Then
+                    userBandleaderSlotAdd()
+                End If
+
+                If methodName = "user.bandleader.slot.remove" Then
+                    userBandleaderSlotRemove()
                 End If
             End If
 
