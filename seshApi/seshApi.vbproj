@@ -67,6 +67,7 @@
     <Compile Include="artist.vb" />
     <Compile Include="bandleader.vb" />
     <Compile Include="bandmember.vb" />
+    <Compile Include="organizer.vb" />
     <Compile Include="responseObj.vb" />
     <Compile Include="seshRequest.vb" />
     <Compile Include="seshResponse.vb" />

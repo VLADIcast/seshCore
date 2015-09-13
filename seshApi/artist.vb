@@ -106,7 +106,7 @@
         bandmember.joinBand()
 
         ' get the created band member GUID
-        createdBandMemberGUID = bandmember.bandMemberGUID
+        createdBandMemberGUID = bandmember.GUID
 
 
     End Sub

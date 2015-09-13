@@ -2,7 +2,7 @@
     Inherits responseObj
 
     Public Property band As seshCore.band
-    Public Property bandLeaderResponse As seshCore.bandMember
+    Public Property bandLeader As seshCore.bandMember
 
 
     Public Sub initRequiredParams()
@@ -25,16 +25,18 @@
 
     Public Sub userBandleaderBandmemberDrop()
         Dim anotherBandMember As seshCore.bandMember
-        anotherBandMember = New seshCore.bandMember(param("bandMemberGUID"))
-        bandLeaderResponse.joinStatus = seshCore.bandMember.joinStatusType.MEMBER_REJECTED
-        bandLeaderResponse.updateBandMembershipStatus(anotherBandMember)
+        anotherBandMember = New seshCore.bandMember
+        anotherBandMember.loadBandMemberfromBandmemberGUID(param("bandMemberGUID"))
+        bandLeader.joinStatus = seshCore.bandMember.joinStatusType.MEMBER_REJECTED
+        bandLeader.updateBandMembershipStatus(anotherBandMember)
 
     End Sub
     Public Sub userBandleaderBandmemberApprove()
         Dim anotherBandMember As seshCore.bandMember
-        anotherBandMember = New seshCore.bandMember(param("bandMemberGUID"))
-        bandLeaderResponse.joinStatus = seshCore.bandMember.joinStatusType.MEMBER_JOINED_ACCEPTED
-        bandLeaderResponse.updateBandMembershipStatus(anotherBandMember)
+        anotherBandMember = New seshCore.bandMember
+        anotherBandMember.loadBandMemberfromBandmemberGUID(param("bandMemberGUID"))
+        bandLeader.joinStatus = seshCore.bandMember.joinStatusType.MEMBER_JOINED_ACCEPTED
+        bandLeader.updateBandMembershipStatus(anotherBandMember)
 
     End Sub
 
@@ -70,6 +72,25 @@
         song.Remove()
         'band.getSongs()
     End Sub
+
+    Public Sub userBandleaderBandSubmit()
+        If bandLeader.band.playStatus = seshCore.band.playStatusType.FORMED Then
+            bandLeader.submitBandToEvent()
+        Else
+            errorCode = seshResponse.errorType.BAND_NOT_FORMED_CANNOT_SUBMIT
+        End If
+
+
+    End Sub
+
+    Public Sub userBandleaderSlotAdd()
+
+    End Sub
+
+    Public Sub userBandleaderSlotRemove()
+
+    End Sub
+
 
     Public Sub userBandleaderMediaAdd()
         Dim mediaItem As seshCore.mediaItem
@@ -115,13 +136,13 @@
 
         _band = New seshCore.band(param("bandGUID"))
 
-        _bandLeaderResponse = _band.leader
+        _bandLeader = _band.leader
 
         'get the band leader GUID
-        Dim bandleaderGUID As String = _bandLeaderResponse.user.GUID
+        Dim bandleaderUserGUID As String = _bandLeader.user.GUID
 
 
-        If bandleaderGUID <> userGUID Then
+        If bandleaderUserGUID <> userGUID Then
             errorCode = seshResponse.errorType.ACCESS_DENIED
         End If
 
@@ -131,7 +152,7 @@
             If methodName.StartsWith("user.bandleader.bandmember.") Then
                 Dim hasAccessToBandMember As Boolean = False
                 For Each bm As seshCore.bandMember In band.members
-                    If bm.bandMemberGUID = param("bandMemberGUID") Then
+                    If bm.GUID = param("bandMemberGUID") Then
                         hasAccessToBandMember = True
                     End If
                 Next
@@ -217,6 +238,9 @@
                     userBandleaderBandmembersMessage()
                 End If
 
+                If methodName = "user.bandleader.band.submit" Then
+                    userBandleaderBandSubmit()
+                End If
             End If
 
 
