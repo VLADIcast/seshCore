@@ -131,6 +131,7 @@ Public Class bandMember
             End If
 
 
+
             ' get the event organizers
             toUsers = New System.Collections.ObjectModel.Collection(Of user)
             For Each organizer As organizer In band.seshEvent.organizers
