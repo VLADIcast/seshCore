@@ -123,11 +123,11 @@ Public Class bandMember
         If band.playStatus = seshCore.band.playStatusType.SUBMITTED Or band.playStatus = seshCore.band.playStatusType.PLAYING Then
 
             If band.playStatus = seshCore.band.playStatusType.SUBMITTED Then
-                emailNotificationType = seshCore.notification.notificationType.SUBMITTED_BAND_UNFORMED
+                emailNotificationType = seshCore.notification.notificationType.ORGANIZER_SUBMITTED_BAND_UNFORMED
             End If
 
             If band.playStatus = seshCore.band.playStatusType.PLAYING Then
-                emailNotificationType = seshCore.notification.notificationType.PLAYING_BAND_UNFORMED
+                emailNotificationType = seshCore.notification.notificationType.ORGANIZER_PLAYING_BAND_UNFORMED
             End If
 
 
@@ -239,22 +239,30 @@ Public Class bandMember
         bandMemberActivity = New bandMemberActivity(Me, seshCore.notification.notificationType.MUSICIAN_DROPPED_OUT)
         bandMemberActivity.Log()
 
-        ' notify the organizers if a band member of a formed and accepted band drops out
-        If band.isAcceptedBandUnformed = True Then
+        ' notify the organizers if a band member of a submitted or playing band drops out
+        If band.playStatus = seshCore.band.playStatusType.SUBMITTED Or band.playStatus = seshCore.band.playStatusType.PLAYING Then
+            Dim emailNotificationType As notification.notificationType
+            If band.playStatus = seshCore.band.playStatusType.SUBMITTED Then
+                emailNotificationType = seshCore.notification.notificationType.ORGANIZER_SUBMITTED_BAND_UNFORMED
+            End If
 
-
+            If band.playStatus = seshCore.band.playStatusType.PLAYING Then
+                emailNotificationType = seshCore.notification.notificationType.ORGANIZER_PLAYING_BAND_UNFORMED
+            End If
             ' get the event organizers
             toUsers = New System.Collections.ObjectModel.Collection(Of user)
             For Each organizer As organizer In band.seshEvent.organizers
                 toUsers.Add(organizer.user)
             Next
-            notification = New notification(seshCore.notification.notificationType.BAND_UNFORMED, band.leader.user, toUsers, band, band.seshEvent)
+            notification = New notification(emailNotificationType, band.leader.user, toUsers, band, band.seshEvent)
 
             ' log the activity
             Dim bandActivity As bandActivity
-            bandActivity = New bandActivity(band, seshCore.notification.notificationType.BAND_UNFORMED)
+            bandActivity = New bandActivity(band, emailNotificationType)
             bandActivity.Log()
+
         End If
+        
 
     End Sub
 
@@ -400,8 +408,73 @@ Public Class band
 
     End Sub
 
-    Public Sub AddSlot()
-        ' Add slot, but unform and unsubmit band if either are true
+    Public Sub AddSlot(slot As slot)
+        ' Add slot, but unform and unsubmit band if band is formed, submitted or playing
+
+        ' run SQL
+
+        ' do messaging
+
+        Dim emailNotificationType As notification.notificationType
+        Dim notification As notification
+
+        If playStatus = playStatusType.SUBMITTED Then
+            emailNotificationType = seshCore.notification.notificationType.SUBMITTED_BAND_SLOT_ADDED
+        End If
+
+        If playStatus = playStatusType.PLAYING Then
+            emailNotificationType = seshCore.notification.notificationType.PLAYING_BAND_SLOT_ADDED
+        End If
+
+
+
+        ' run SQL to update status.
+
+
+        ' send email notification to band member regarding the added slot
+        ' get the band members
+        Dim toUsers As System.Collections.ObjectModel.Collection(Of user)
+        toUsers = New System.Collections.ObjectModel.Collection(Of user)
+        For Each bandMember As bandMember In members
+            toUsers.Add(bandMember.user)
+        Next
+        notification = New notification(emailNotificationType, leader.user, toUsers, Me, seshEvent)
+
+
+        ' log the activity
+        Dim bandMemberActivity As bandActivity
+        bandMemberActivity = New bandActivity(Me, emailNotificationType)
+        bandMemberActivity.Log()
+
+
+
+        ' if band has submitted or is playing, then there status gets changed back to FORMED and organizers are notified
+        If playStatus = seshCore.band.playStatusType.SUBMITTED Or playStatus = seshCore.band.playStatusType.PLAYING Then
+
+            If playStatus = seshCore.band.playStatusType.SUBMITTED Then
+                emailNotificationType = seshCore.notification.notificationType.ORGANIZER_SUBMITTED_BAND_UNFORMED
+            End If
+
+            If playStatus = seshCore.band.playStatusType.PLAYING Then
+                emailNotificationType = seshCore.notification.notificationType.ORGANIZER_PLAYING_BAND_UNFORMED
+            End If
+
+
+
+            ' get the event organizers
+            toUsers = New System.Collections.ObjectModel.Collection(Of user)
+            For Each organizer As organizer In seshEvent.organizers
+                toUsers.Add(organizer.user)
+            Next
+            notification = New notification(emailNotificationType, leader.user, toUsers, Me, seshEvent)
+
+            ' log the activity
+            Dim bandActivity As bandActivity
+            bandActivity = New bandActivity(Me, emailNotificationType)
+            bandActivity.Log()
+
+        End If
+
     End Sub
 
 
@@ -413,7 +486,7 @@ Public Class band
 
         ' log the activity
         Dim bandActivity As bandActivity
-        bandActivity = New bandActivity(Me, notification.notificationType.BAND_UNFORMED)
+        bandActivity = New bandActivity(Me, notification.notificationType.BAND_CREATION_INITIATED)
         bandActivity.Log()
 
 
@@ -436,7 +509,7 @@ Public Class band
             toUsers.Add(bandMember.user)
         Next
 
-        notification = New notification(seshCore.notification.notificationType.CONTACT_MESSAGE, fromUser, toUsers, Nothing, Nothing, subject)
+        notification = New notification(seshCore.notification.notificationType.CONTACT_MESSAGE, fromUser, toUsers, Nothing, Nothing, subject, body)
     End Sub
 
     ' message the band leader
@@ -446,7 +519,7 @@ Public Class band
         toUsers = New System.Collections.ObjectModel.Collection(Of user)
 
         toUsers.Add(leader.user)
-        notification = New notification(seshCore.notification.notificationType.CONTACT_MESSAGE, fromUser, toUsers, Nothing, Nothing, subject)
+        notification = New notification(seshCore.notification.notificationType.CONTACT_MESSAGE, fromUser, toUsers, Nothing, Nothing, subject, body)
         'messageBandMembers(fromUser, subject, toUsers, body)
     End Sub
 
