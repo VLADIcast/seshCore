@@ -14,7 +14,7 @@
     ' process each type of method
     Public Sub processMethod()
         errorCode = errorType.NO_ERROR
-        Dim x As Integer = 1
+
         ' authenticate user GUID
         If methodName.StartsWith("user.") Then
             If seshRequest.userGUID = "" Then
